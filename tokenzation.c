@@ -26,11 +26,25 @@ void	skip_whitespace(t_lexer *lexer)
 		lexer->position++;
 }
 
+t_token *create_token(char *value)
+{
+	t_token *token;
+
+	token = malloc(sizeof(t_token));
+	if(!token)
+		return (NULL);
+	else
+	{
+		token->value = ft_strdup(value);
+		token->next = NULL;
+	}
+	return(token);
+}
 t_token	*handle_quote(t_lexer *lexer, char quote)
 {
 	size_t	lenght;
 	size_t	start;
-	char	*cmd;
+	char	*value;
 
 	lexer->position += 1;
 	start = lexer->position;
@@ -39,24 +53,11 @@ t_token	*handle_quote(t_lexer *lexer, char quote)
 	if (lexer->position >= lexer->lenght)
 		return NULL;
 	lenght = lexer->position - start;
-	cmd = ft_substr(lexer->input, start, lenght);
+	value = ft_substr(lexer->input, start, lenght);
 	lexer->position += 1;
+	return (create_token(value));
 }
 
-// t_token *create_token(char *value)
-// {
-// 	t_token *token;
-
-// 	token = malloc(sizeof(t_token));
-// 	if(!token)
-// 		return (NULL);
-// 	else
-// 	{
-// 		token->args = ft_strdup(value);
-// 		token->next = NULL;
-// 	}
-// 	return(token);
-// }
 
 int main(int argc, char **argv)
 {
