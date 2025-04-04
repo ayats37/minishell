@@ -32,15 +32,15 @@ t_token	*handle_quote(t_lexer *lexer, char quote)
 	size_t	start;
 	char	*cmd;
 
-	start = lexer->position + 1;
+	lexer->position += 1;
+	start = lexer->position;
 	while(lexer->position < lexer->lenght && lexer->input[lexer->position] != quote)
 		lexer->position++;
 	if (lexer->position >= lexer->lenght)
 		return NULL;
 	lenght = lexer->position - start;
 	cmd = ft_substr(lexer->input, start, lenght);
-	printf("%s\n", cmd);
-	return NULL;
+	lexer->position += 1;
 }
 
 // t_token *create_token(char *value)
@@ -80,6 +80,10 @@ int main(int argc, char **argv)
 		if (lexer->position >= lexer->lenght)
 			return 1;
 		current = lexer->input[lexer->position];
+		// printf("position = %d\n", lexer->position);
+		// printf("lenght = %d\n", lexer->lenght);
+		// printf("input = %s\n", lexer->input);
+		// printf("current = %c\n", current);
 		if (current == '\'' || current == '"')
 			handle_quote(lexer, current);
 		// printf("input = %s\n", input);
