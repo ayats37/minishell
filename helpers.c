@@ -2,7 +2,11 @@
 
 void first_cmd(t_data *data, int pipe_fd[][2])
 {
-	dup2(pipe_fd[data->i][1], STDOUT_FILENO);
+	if (dup2(pipe_fd[data->i][1], STDOUT_FILENO) == -1)
+	{
+		perror("co");
+		exit(1);
+	}
 }
 void middle_cmd(t_data *data, int pipe_fd[][2])
 {
@@ -42,11 +46,12 @@ void child(t_data *data, int pipe_fd[][2], char *input)
 
     if (data->i == 0)
         first_cmd(data, pipe_fd);
+	// printf("input = %s\n", input);
     else if (data->i < data->cmd_nbrs - 1)
 			last_cmd(data, pipe_fd);
     else
 			middle_cmd(data, pipe_fd); 
-   
+    
     while (j < data->cmd_nbrs - 1)
     {
         close(pipe_fd[j][0]);

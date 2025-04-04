@@ -25,15 +25,9 @@ char **find_path(char **env)
 
 char *check_path(char **env, char *cmd) 
 {
-    if (cmd[0] == '.' && cmd[1] == '/') 
+    if ((cmd[0] == '.' && cmd[1] == '/') || cmd[0] == '/')
 	{
         if (access(cmd, F_OK | X_OK) == 0)
-            return ft_strdup(cmd);
-        return NULL;
-    }
-    if (cmd[0] == '/')
-	{
-        if (access(cmd, F_OK | X_OK) == 0) 
             return ft_strdup(cmd);
         return NULL;
     }
@@ -62,6 +56,93 @@ void	handler(int sig)
 	rl_replace_line("", 0);
 	rl_redisplay();
 }
+
+int calculate_cmd_nbr(char *input)
+{
+    int count = 1; 
+    int i = 0;
+    
+    while (input[i])
+    {
+		if (input[i] == '|' && input[i+1] == '|')
+		{
+			count++;
+			i++;
+		}
+        else if (input[i] == '|')
+            count++;
+        i++;
+    }
+    return count;
+}
+
+void execute_one(char *input, t_data *data)
+{
+	char **cmd;
+	pid_t pid;
+	pid  = fork();
+	cmd = ft_split(input, 32);
+	if (pid == 0)
+	{
+		char *full_path = check_path(data->env, cmd[0]);
+		if (!full_path)
+			exit(1);
+		execve(full_path, cmd, data->env);
+	}
+	wait(NULL);
+}
+
+int main(int argc, char **argv, char **env)
+{
+    (void)argc;
+    (void)argv;
+    int pipe_fd[MAX_PIPES][2];
+    t_data data;
+    char *input;
+    int status;
+    data.env = env;
+
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGINT, handler);
+    rl_catch_signals = 0;
+    char *prompt = "minishel> ";
+
+    while (1)
+    {
+        input = readline(prompt);
+        if (!input)
+        {
+            write(1, "exit\n", 5);
+            exit(0);
+        }
+        if (input[0] == '\0')
+        {
+            free(input);
+            continue;
+        }
+        data.cmd_nbrs = calculate_cmd_nbr(input);
+		// printf("cmd_nbrs = %d\n", data.cmd_nbrs);
+		if (data.cmd_nbrs == 1)
+			execute_one(input, &data);
+        else if (data.cmd_nbrs > 1)
+        {
+            create_pipe(&data, pipe_fd);
+            create_child(&data, pipe_fd, input);
+            close_pipes(&data, pipe_fd);
+            wait_children(&data, &status);
+        }
+        free(input);
+    }  
+    return (WEXITSTATUS(status));
+}
+
+
+
+
+
+
+
+
 
 // int main(int ac, char **av, char **env)
 // {
@@ -100,57 +181,3 @@ void	handler(int sig)
 // 	}
 // 	return (0);
 // }
-int calculate_cmd_nbr(char *input)
-{
-    int count = 1; 
-    int i = 0;
-    
-    while (input[i])
-    {
-        if (input[i] == '|')
-            count++;
-        i++;
-    }
-    return count;
-}
-
-int main(int argc, char **argv, char **env)
-{
-    (void)argc;
-    (void)argv;
-    int pipe_fd[MAX_PIPES][2];
-    t_data data;
-    char *input;
-    int status;
-    data.env = env;
-
-    signal(SIGQUIT, SIG_IGN);
-    signal(SIGINT, handler);
-    rl_catch_signals = 0;
-    char *prompt = "minishel> ";
-
-    while (1)
-    {
-        input = readline(prompt);
-        if (!input)
-        {
-            write(1, "exit\n", 5);
-            exit(0);
-        }
-        if (input[0] == '\0')
-        {
-            free(input);
-            continue;
-        }
-        data.cmd_nbrs = calculate_cmd_nbr(input);
-        if (data.cmd_nbrs > 0)
-        {
-            create_pipe(&data, pipe_fd);
-            create_child(&data, pipe_fd, input);
-            close_pipes(&data, pipe_fd);
-            wait_children(&data, &status);
-        }
-        free(input);
-    }  
-    return (WEXITSTATUS(status));
-}
