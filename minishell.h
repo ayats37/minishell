@@ -6,7 +6,7 @@
 /*   By: taya <taya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:58:09 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/03 20:29:40 by taya             ###   ########.fr       */
+/*   Updated: 2025/04/03 23:59:17 by taya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,25 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-typedef struct s_node t_node;
-struct s_node
+#define MAX_PIPES 1024
+typedef struct s_data
 {
-	char *env;
-};
+	char **env;
+	int cmd_nbrs;	
+	int i;
+}	t_data;
 
 
 char	**ft_split(char const *s, char c);
+char *check_path(char **env, char *cmd);
+void	create_child(t_data *data, int pipe_fd[][2], char *input);
+void create_pipe(t_data *data, int pipe_fd[][2]);
+void	close_pipes(t_data *data, int pipe_fd[][2]);
+void child(t_data *data, int pipe_fd[][2], char *input);
+void	execute_cmd(t_data *data, char *input);
+void first_cmd(t_data *data, int pipe_fd[][2]);
+void middle_cmd(t_data *data, int pipe_fd[][2]);
+void last_cmd(t_data *data, int pipe_fd[][2]);
+void	wait_children(t_data *data, int *status);
 
 #endif

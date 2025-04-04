@@ -63,37 +63,94 @@ void	handler(int sig)
 	rl_redisplay();
 }
 
-int main(int ac, char **av, char **env)
-{
+// int main(int ac, char **av, char **env)
+// {
 
-	(void)ac;
-	(void)av;
-	pid_t pid;
-	char **cmd;
-	char *ret;
+// 	(void)ac;
+// 	(void)av;
+// 	pid_t pid;
+// 	char **cmd;
+// 	char *ret;
 	
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGINT, handler);
-	rl_catch_signals = 0;
-	char *str = "minishel> ";
-	while(1)
-	{
-		ret = readline(str);
-		if (!ret)
-		{
-			write(1,"exit\n", 5);
-			exit(0);
-		}
-		else if (ret)
-		{
-			pid  = fork();
-			cmd = ft_split(ret, 32);
-			if (pid == 0)
-			{
-				char *full_path = check_path(env, cmd[0]);
-				execve(full_path, cmd, env);
-			}
-			wait(NULL);
-		}
-	}
+// 	signal(SIGQUIT, SIG_IGN);
+// 	signal(SIGINT, handler);
+// 	rl_catch_signals = 0;
+// 	char *str = "minishel> ";
+// 	while(1)
+// 	{
+// 		ret = readline(str);
+// 		if (!ret)
+// 		{
+// 			write(1,"exit\n", 5);
+// 			exit(0);
+// 		}
+// 		else if (ret)
+// 		{
+// 			pid  = fork();
+// 			cmd = ft_split(ret, 32);
+// 			if (pid == 0)
+// 			{
+// 				char *full_path = check_path(env, cmd[0]);
+// 				if (!full_path)
+// 					return(1);
+// 				execve(full_path, cmd, env);
+// 			}
+// 			wait(NULL);
+// 		}
+// 	}
+// 	return (0);
+// }
+int calculate_cmd_nbr(char *input)
+{
+    int count = 1; 
+    int i = 0;
+    
+    while (input[i])
+    {
+        if (input[i] == '|')
+            count++;
+        i++;
+    }
+    return count;
+}
+
+int main(int argc, char **argv, char **env)
+{
+    (void)argc;
+    (void)argv;
+    int pipe_fd[MAX_PIPES][2];
+    t_data data;
+    char *input;
+    int status;
+    data.env = env;
+
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGINT, handler);
+    rl_catch_signals = 0;
+    char *prompt = "minishel> ";
+
+    while (1)
+    {
+        input = readline(prompt);
+        if (!input)
+        {
+            write(1, "exit\n", 5);
+            exit(0);
+        }
+        if (input[0] == '\0')
+        {
+            free(input);
+            continue;
+        }
+        data.cmd_nbrs = calculate_cmd_nbr(input);
+        if (data.cmd_nbrs > 0)
+        {
+            create_pipe(&data, pipe_fd);
+            create_child(&data, pipe_fd, input);
+            close_pipes(&data, pipe_fd);
+            wait_children(&data, &status);
+        }
+        free(input);
+    }  
+    return (WEXITSTATUS(status));
 }
