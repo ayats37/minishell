@@ -6,7 +6,7 @@
 /*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:58:09 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/06 11:33:05 by ouel-afi         ###   ########.fr       */
+/*   Updated: 2025/04/06 19:26:17 by ouel-afi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,37 +33,50 @@ typedef struct s_data
 	int i;
 }	t_data;
 
-typedef struct s_lexer
-{
+typedef struct s_lexer {
 	int position;
 	int lenght;
 	char *input;
+	int quote;
 }	t_lexer;
 
 
 typedef enum s_type {
-    CMD,      		// cmd
+    CMD,
 	WORD,
-	PIPE,			// |
-	SINGLE_QUOTE,	// '
-	DOUBLE_QUOTE,	// "
-    REDIR_IN,       // <
-    REDIR_OUT,      // >
-    APPEND,         // >>
-    HEREDOC,        // <<
-    OPEN_PAREN,  	// (
-    CLOSE_PAREN, 	  // )
+	PIPE,
+	SINGLE_QUOTE,
+	DOUBLE_QUOTE,
+    REDIR_IN,
+    REDIR_OUT,
+    APPEND,
+    HEREDOC,
+    OPEN_PAREN,
+    CLOSE_PAREN,
 	OR,
 	AND
 } t_type;
 
-typedef struct s_token
-{
+typedef enum s_precedence {
+	WORDS,
+	QUOTES,
+	PAREN,
+	REDIR,
+	PIPES,
+	OPER
+} t_precedence;
+
+typedef struct s_token {
 	char	*value;
 	t_type		type;
+	t_precedence prece;
 	struct s_token *next;
 }	t_token;
 
+typedef struct s_queue {
+	t_token *front;
+	t_token *back;
+} t_queue;
 
 char	**ft_split(char const *s, char c);
 char *check_path(char **env, char *cmd);

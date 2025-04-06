@@ -6,7 +6,7 @@
 /*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 15:24:04 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/06 13:16:35 by ouel-afi         ###   ########.fr       */
+/*   Updated: 2025/04/06 20:51:20 by ouel-afi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ t_lexer	*initialize_lexer(char *input)
 	lexer->input = input;
 	lexer->lenght = ft_strlen(input);
 	lexer->position = 0;
+	lexer->quote = 0;
 	return (lexer);
 }
 
@@ -55,13 +56,31 @@ t_token	*create_token(char *value)
 	return (token);
 }
 
+t_token	*quote_token(t_lexer *lexer, char quote)
+{
+	int i;
+
+	i = lexer->position + 1;
+	while (i < lexer->lenght)
+	{
+		if (lexer->input[i] == '\'' || lexer->input[i] == '"')
+		{
+			lexer->quote += 1;
+			break ;
+		}
+		else
+			i++;
+	}
+	lexer->position += 1;
+	return(create_token(ft_substr(&quote, 0 , 1)));
+}
+
 t_token	*handle_quote(t_lexer *lexer, char quote)
 {
 	size_t	lenght;
 	size_t	start;
 	char	*value;
 
-	lexer->position += 1;
 	start = lexer->position;
 	while (lexer->position < lexer->lenght 
 		&& lexer->input[lexer->position] != quote)
@@ -73,7 +92,7 @@ t_token	*handle_quote(t_lexer *lexer, char quote)
 	}
 	lenght = lexer->position - start;
 	value = ft_substr(lexer->input, start, lenght);
-	lexer->position += 1;
+	lexer->quote = 0;
 	return (create_token(value));
 }
 
@@ -88,18 +107,6 @@ t_token	*handle_operations(t_lexer *lexer, char *oper, int i)
 	lexer->position += i;
 	return (create_token(str));
 }
-
-// t_token	*handle_others(t_lexer *lexer, char *oper)
-// {
-// 	char *str;
-
-// 	str = ft_substr(oper, 0, 2);
-// 	if(!str)
-// 		return NULL;
-// 	str[2] = '\0';
-// 	lexer->position += 2;
-// 	return (create_token(str));
-// }
 
 t_token	*handle_word(t_lexer *lexer)
 {
@@ -132,8 +139,10 @@ t_token	*get_next_token(t_lexer *lexer)
 	if (lexer->position >= lexer->lenght)
 		return (NULL);
 	current = lexer->input + lexer->position;
-	if (current[0] == '\'' || current[0] == '"')
+	if (lexer->quote == 1)
 		return (handle_quote(lexer, *current));
+	if (current[0] == '\'' || current[0] == '"')
+		return (quote_token(lexer, *current));
 	if ((lexer->input[lexer->position] == '|' 
 			&& lexer->input[lexer->position + 1] == '|') 
 		|| (lexer->input[lexer->position] == '&' 
@@ -193,6 +202,36 @@ t_type	token_type(t_token *token)
 		return (WORD);
 }
 
+t_precedence precedence_type(t_token *token)
+{
+	if (token->type == 3 || token->type == 4)
+		return (QUOTES);
+	else if (token->type == 9 || token->type == 10)
+		return (PAREN);
+	else if (token->type == 5 || token->type == 6 || token->type == 7 || token->type == 8)
+		return (REDIR);
+	else if (token->type == 2)
+		return (PIPES);
+	else if (token->type == 11 || token->type == 12)
+		return (OPER);
+	return (WORDS);
+}
+
+void enqueue(t_queue *queue, t_token *token)
+{
+    token->next = NULL;
+    if (queue->front == NULL)
+    {
+        queue->front = token;
+        queue->back = token;
+    }
+    else
+    {
+        queue->back->next = token;
+        queue->back = token;
+    }
+}
+
 int	main(int argc, char **argv)
 {
 	char	*input;
@@ -211,7 +250,8 @@ int	main(int argc, char **argv)
 			if (!token->value)
 				return (0);
 			token->type = token_type(token);
-			printf("token->value = %s		token->type = %d\n", token->value, token->type);
+			token->prece = precedence_type(token);
+			printf("token = %s			token->prece = %d		token->type = %d\n", token->value, token->prece, token->type);
 		}
 	}
 	return (0);
