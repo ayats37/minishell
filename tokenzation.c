@@ -6,11 +6,12 @@
 /*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 15:24:04 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/06 11:43:16 by ouel-afi         ###   ########.fr       */
+/*   Updated: 2025/04/06 11:54:23 by ouel-afi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
 
 t_lexer	*initialize_lexer(char *input)
 {
