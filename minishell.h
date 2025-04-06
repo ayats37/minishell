@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: taya <taya@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:58:09 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/04 17:42:26 by taya             ###   ########.fr       */
+/*   Updated: 2025/04/06 11:33:05 by ouel-afi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # include <sys/types.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <string.h>
 
 #define MAX_PIPES 1024
 typedef struct s_data
@@ -39,9 +40,27 @@ typedef struct s_lexer
 	char *input;
 }	t_lexer;
 
+
+typedef enum s_type {
+    CMD,      		// cmd
+	WORD,
+	PIPE,			// |
+	SINGLE_QUOTE,	// '
+	DOUBLE_QUOTE,	// "
+    REDIR_IN,       // <
+    REDIR_OUT,      // >
+    APPEND,         // >>
+    HEREDOC,        // <<
+    OPEN_PAREN,  	// (
+    CLOSE_PAREN, 	  // )
+	OR,
+	AND
+} t_type;
+
 typedef struct s_token
 {
-	char *value;
+	char	*value;
+	t_type		type;
 	struct s_token *next;
 }	t_token;
 
