@@ -6,12 +6,11 @@
 /*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 15:24:04 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/06 11:54:23 by ouel-afi         ###   ########.fr       */
+/*   Updated: 2025/04/06 13:16:35 by ouel-afi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdio.h>
 
 t_lexer	*initialize_lexer(char *input)
 {
@@ -109,6 +108,7 @@ t_token	*handle_word(t_lexer *lexer)
 	size_t	lenght;
 
 	start = lexer->position;
+	// printf("lexer->position = %d			lexer->lenght = %d\n", lexer->position, lexer->lenght);
 	while (lexer->position < lexer->lenght && (!is_space(lexer)) 
 		&& lexer->input[lexer->position] != '\'' 
 		&& lexer->input[lexer->position] != '"' 
@@ -145,7 +145,7 @@ t_token	*get_next_token(t_lexer *lexer)
 			&& lexer->input[lexer->position + 1] == '<'))
 		return (handle_operations(lexer, current, 2));
 	if (current[0] == '|' || current[0] == '<' || current[0] == '>' 
-		|| current[0] == '(' || current[0] == ')')
+		|| current[0] == '(' || current[0] == ')' || current[0] == '&')
 		return (handle_operations(lexer, current, 1));
 	return (handle_word(lexer));
 }
@@ -211,6 +211,7 @@ int	main(int argc, char **argv)
 			if (!token->value)
 				return (0);
 			token->type = token_type(token);
+			printf("token->value = %s		token->type = %d\n", token->value, token->type);
 		}
 	}
 	return (0);
