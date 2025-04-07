@@ -6,7 +6,7 @@
 /*   By: taya <taya@student.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:58:09 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/07 01:25:15 by taya             ###   ########.fr       */
+/*   Updated: 2025/04/07 18:01:10 by taya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,13 @@ typedef struct s_queue {
 	t_token *back;
 } t_queue;
 
+typedef struct s_env
+{
+	char *name;
+	char *value;
+	struct s_env *next;
+}	t_env;
+
 char	**ft_split(char const *s, char c);
 char *check_path(char **env, char *cmd);
 void	create_child(t_data *data, int pipe_fd[][2], char *input);
@@ -104,6 +111,9 @@ t_token	*get_next_token(t_lexer *lexer);
 int	cmd_type(t_token *token, int first_cmd);
 t_type	token_type(t_token *token);
 t_precedence precedence_type(t_token *token);
+//***************************************exec**********************************************
+void update_env(char *name, char *value);
+char *get_env_value(char *name);
 
 
 #endif
