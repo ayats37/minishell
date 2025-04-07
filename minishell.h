@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: taya <taya@student.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:58:09 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/06 19:26:17 by ouel-afi         ###   ########.fr       */
+/*   Updated: 2025/04/07 01:25:15 by taya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,5 +90,20 @@ void middle_cmd(t_data *data, int pipe_fd[][2]);
 void last_cmd(t_data *data, int pipe_fd[][2]);
 void	wait_children(t_data *data, int *status);
 void write_split(char **split);
+
+//************************************************************tokenzation********************************************************************************
+t_lexer	*initialize_lexer(char *input);
+int	is_space(t_lexer *lexer);
+void	skip_whitespace(t_lexer *lexer);
+t_token	*create_token(char *value);
+t_token	*quote_token(t_lexer *lexer, char quote);
+t_token	*handle_quote(t_lexer *lexer, char quote);
+t_token	*handle_operations(t_lexer *lexer, char *oper, int i);
+t_token	*handle_word(t_lexer *lexer);
+t_token	*get_next_token(t_lexer *lexer);
+int	cmd_type(t_token *token, int first_cmd);
+t_type	token_type(t_token *token);
+t_precedence precedence_type(t_token *token);
+
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenzation.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ouel-afi <ouel-afi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: taya <taya@student.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 15:24:04 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/06 20:51:20 by ouel-afi         ###   ########.fr       */
+/*   Updated: 2025/04/07 01:12:42 by taya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,27 +232,27 @@ void enqueue(t_queue *queue, t_token *token)
     }
 }
 
-int	main(int argc, char **argv)
-{
-	char	*input;
-	t_lexer	*lexer;
-	t_token	*token;
+// int	main(int argc, char **argv)
+// {
+// 	char	*input;
+// 	t_lexer	*lexer;
+// 	t_token	*token;
 
-	(void)argc;
-	(void)argv;
-	while (1)
-	{
-		input = readline("minishell> ");
-		lexer = initialize_lexer(input);
-		while (lexer->position < lexer->lenght)
-		{
-			token = get_next_token(lexer);
-			if (!token->value)
-				return (0);
-			token->type = token_type(token);
-			token->prece = precedence_type(token);
-			printf("token = %s			token->prece = %d		token->type = %d\n", token->value, token->prece, token->type);
-		}
-	}
-	return (0);
-}
+// 	(void)argc;
+// 	(void)argv;
+// 	while (1)
+// 	{
+// 		input = readline("minishell> ");
+// 		lexer = initialize_lexer(input);
+// 		while (lexer->position < lexer->lenght)
+// 		{
+// 			token = get_next_token(lexer);
+// 			if (!token->value)
+// 				return (0);
+// 			token->type = token_type(token);
+// 			token->prece = precedence_type(token);
+// 			printf("token = %s			token->prece = %d		token->type = %d\n", token->value, token->prece, token->type);
+// 		}
+// 	}
+// 	return (0);
+// }
