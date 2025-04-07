@@ -6,7 +6,7 @@
 /*   By: taya <taya@student.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 12:58:09 by ouel-afi          #+#    #+#             */
-/*   Updated: 2025/04/07 18:01:10 by taya             ###   ########.fr       */
+/*   Updated: 2025/04/07 22:21:20 by taya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,9 @@ typedef struct s_env
 	char *name;
 	char *value;
 	struct s_env *next;
+	char **env;
 }	t_env;
+
 
 char	**ft_split(char const *s, char c);
 char *check_path(char **env, char *cmd);
@@ -112,8 +114,11 @@ int	cmd_type(t_token *token, int first_cmd);
 t_type	token_type(t_token *token);
 t_precedence precedence_type(t_token *token);
 //***************************************exec**********************************************
-void update_env(char *name, char *value);
-char *get_env_value(char *name);
-
+void update_env(char *name, char *value, t_env **env_list);
+char *get_env_value(char *name, t_env *env_list);
+t_env *init_env(char **env);
+t_env *create_env_node(char *env_var);
+void add_to_env_list(t_env **head, t_env *new_node);
+t_env *init_env(char **envp);
 
 #endif

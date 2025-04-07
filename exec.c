@@ -1,6 +1,47 @@
 #include "minishell.h"
 
-t_env *env_list = NULL;
+t_env *create_env_node(char *env_var)
+{
+    t_env *new_node;
+    char *equal_sign;
+    
+    new_node = malloc(sizeof(t_env));
+    if (!new_node)
+        return NULL;
+
+    equal_sign = strchr(env_var, '=');
+    if (equal_sign)
+    {
+        new_node->name = strndup(env_var, equal_sign - env_var);
+        new_node->value = strdup(equal_sign + 1);
+    }
+    else
+    {
+        new_node->name = strdup(env_var);
+        new_node->value = NULL;
+    }
+    
+    new_node->next = NULL;
+
+    return new_node;
+}
+
+void add_to_env_list(t_env **head, t_env *new_node)
+{
+    t_env *tmp;
+
+    if (*head == NULL) 
+    {
+        *head = new_node;
+    }
+    else
+    {
+        tmp = *head;
+        while (tmp->next)
+            tmp = tmp->next;
+        tmp->next = new_node;
+    }
+}
 
 int    ft_cd(t_token *path, t_lexer *lexer)
 {
@@ -24,7 +65,7 @@ int ft_pwd()
     printf("%s\n", cwd);
     return (0);
 }
-int ft_echo(t_lexer *lexer)
+int ft_echo(t_lexer *lexer, t_env *env_list)
 {
     int new_line;
     char *var_value;
@@ -44,7 +85,7 @@ int ft_echo(t_lexer *lexer)
         {
             if (string->value[0] == '$')
             {
-                var_value = get_env_value(string->value + 1);
+                var_value = get_env_value(string->value + 1, env_list);
                 if(var_value)
                     printf("%s", var_value);
             }
@@ -61,7 +102,7 @@ int ft_echo(t_lexer *lexer)
        
 }
 
-int ft_export(t_token *input, t_lexer *lexer)
+int ft_export(t_token *input, t_lexer *lexer, t_env *env_list)
 {
    char *equal_sign;
    char *name;
@@ -73,13 +114,13 @@ int ft_export(t_token *input, t_lexer *lexer)
         return(1);
    name = strndup(input->value, equal_sign - input->value);
    value = ft_strdup(equal_sign + 1);
-   update_env(name, value);
+   update_env(name, value, env_list);
    free(name);
    free(value);
    return (0);
 }
 
-void update_env(char *name, char *value)
+void update_env(char *name, char *value, t_env *env_list)
 {
     t_env *current = env_list;
     t_env *new_env;
@@ -100,7 +141,7 @@ void update_env(char *name, char *value)
     new_env->next = env_list;
     env_list = new_env;
 }
-char *get_env_value(char *name)
+char *get_env_value(char *name, t_env *env_list)
 {
     t_env *current = env_list;
 
@@ -113,29 +154,110 @@ char *get_env_value(char *name)
     return(NULL);
 }
 
-int execute_builtin(t_token *token, t_lexer *lexer)
+int ft_env(t_env *env_list)
+{
+    t_env *current = env_list;
+    
+    while(current)
+    {
+        printf("%s=%s\n", current->name, current->value);
+        current = current->next;
+    }
+    return(0);
+}
+
+int ft_exit(t_lexer *lexer)
+{
+    t_token *arg;
+    int exit_status = 0;
+    // t_env *current = env_list;
+    
+    arg = get_next_token(lexer);
+    if (arg)
+        exit_status = atoi(arg->value);
+    // while (current)
+    // {
+    //     free(current->name);
+    //     free(current->value);
+    //     free(current);
+    //     current = current->next;
+    // }
+    // free(lexer->input);
+    // free(lexer);
+    printf("exit\n");
+    exit(exit_status);
+    return (0);
+}
+int ft_unset(t_lexer *lexer, t_env *env_list)
+{
+    t_token *var;
+    t_env *current = env_list;
+    t_env *prev = NULL;
+    var = get_next_token(lexer);
+
+    if (!var || !var->value)
+        return (1);
+    while(current)
+    {
+        if (strcmp(var->value, current->name) == 0)
+        {
+            if (prev == NULL)
+                env_list = current->next;
+            else
+                prev->next = current->next;
+            free(current->name);
+            free(current->value);
+            free(current);
+            return (0);
+        }
+        prev = current;
+        current = current->next;
+    }
+    return(1);
+}
+
+int execute_builtin(t_token *token, t_lexer *lexer, t_env *envlist)
 {
     if (strcmp(token->value, "echo") == 0)
-        ft_echo(lexer);
+        ft_echo(lexer, envlist);
     if (strcmp(token->value, "cd") == 0)
         return(ft_cd(token, lexer));
     if (strcmp(token->value, "pwd") == 0)
         return (ft_pwd());
     if (strcmp(token->value, "export") == 0)
-        return(ft_export(token, lexer));
-    // if (strcmp(token->value, "unset") == 0)
-    // if (strcmp(token->value, "env") == 0)
-    // if (strcmp(token->value, "exit") == 0)§
+        return(ft_export(token, lexer, envlist));
+    if (strcmp(token->value, "unset") == 0)
+        return(ft_unset(lexer, envlist));
+    if (strcmp(token->value, "env") == 0)
+        return(ft_env(envlist));
+    if (strcmp(token->value, "exit") == 0)
+        return(ft_exit(lexer));
     return (0);
 }
 
+t_env *init_env(char **envp)
+{
+    t_env *head = NULL;
+    t_env *new_node;
+    int i = 0;
 
-int	main(int argc, char **argv)
+    while (envp[i])
+    {
+        new_node = create_env_node(envp[i]);
+        if (!new_node)
+            return (NULL); 
+        add_to_env_list(&head, new_node);
+        i++;
+    }
+    return (head); // Return the head of the list
+}
+
+int	main(int argc, char **argv, char **env)
 {
 	char	*input;
 	t_lexer	*lexer;
 	t_token	*token;
- 
+    t_env *envlist = init_env(env);
 
 	(void)argc;
 	(void)argv;
@@ -151,7 +273,7 @@ int	main(int argc, char **argv)
 			token->type = token_type(token);
 			token->prece = precedence_type(token);
             // printf("%s\n", token->value);
-			execute_builtin(token, lexer);
+			execute_builtin(token, lexer, envlist);
 		}
 	}
 	return (0);
