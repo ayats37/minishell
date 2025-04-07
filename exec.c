@@ -249,7 +249,7 @@ t_env *init_env(char **envp)
         add_to_env_list(&head, new_node);
         i++;
     }
-    return (head); // Return the head of the list
+    return (head); 
 }
 
 int	main(int argc, char **argv, char **env)
