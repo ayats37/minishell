@@ -20,9 +20,7 @@ t_env *create_env_node(char *env_var)
         new_node->name = strdup(env_var);
         new_node->value = NULL;
     }
-    
     new_node->next = NULL;
-
     return new_node;
 }
 
@@ -31,9 +29,7 @@ void add_to_env_list(t_env **head, t_env *new_node)
     t_env *tmp;
 
     if (*head == NULL) 
-    {
         *head = new_node;
-    }
     else
     {
         tmp = *head;
@@ -46,6 +42,11 @@ void add_to_env_list(t_env **head, t_env *new_node)
 int    ft_cd(t_token *path, t_lexer *lexer)
 {
     path = get_next_token(lexer);
+    if (!path)
+    {
+        chdir("/Users/Ptipana");
+        return (0);
+    }
     // printf("path= %s\n", path->value);
   if (chdir(path->value) != 0)
   {
@@ -102,12 +103,12 @@ int ft_echo(t_lexer *lexer, t_env *env_list)
        
 }
 
-int ft_export(t_token *input, t_lexer *lexer, t_env *env_list)
+int ft_export(t_token *input, t_lexer *lexer, t_env **env_list)
 {
    char *equal_sign;
    char *name;
    char *value;
-    input = get_next_token(lexer);
+   input = get_next_token(lexer);
 
    equal_sign = ft_strchr(input->value, '=');
    if (!equal_sign)
@@ -120,9 +121,9 @@ int ft_export(t_token *input, t_lexer *lexer, t_env *env_list)
    return (0);
 }
 
-void update_env(char *name, char *value, t_env *env_list)
+void update_env(char *name, char *value, t_env **env_list)
 {
-    t_env *current = env_list;
+    t_env *current = *env_list;
     t_env *new_env;
 
     while (current)
@@ -135,11 +136,11 @@ void update_env(char *name, char *value, t_env *env_list)
         }
         current = current->next;
     }
-    new_env = malloc(sizeof (t_env));
+    new_env = malloc(sizeof(t_env));
     new_env->name = ft_strdup(name);
     new_env->value = ft_strdup(value);
-    new_env->next = env_list;
-    env_list = new_env;
+    new_env->next = *env_list;
+    *env_list = new_env;
 }
 char *get_env_value(char *name, t_env *env_list)
 {
@@ -188,10 +189,10 @@ int ft_exit(t_lexer *lexer)
     exit(exit_status);
     return (0);
 }
-int ft_unset(t_lexer *lexer, t_env *env_list)
+int ft_unset(t_lexer *lexer, t_env **env_list)
 {
     t_token *var;
-    t_env *current = env_list;
+    t_env *current = *env_list;
     t_env *prev = NULL;
     var = get_next_token(lexer);
 
@@ -202,7 +203,7 @@ int ft_unset(t_lexer *lexer, t_env *env_list)
         if (strcmp(var->value, current->name) == 0)
         {
             if (prev == NULL)
-                env_list = current->next;
+                *env_list = current->next;
             else
                 prev->next = current->next;
             free(current->name);
@@ -216,20 +217,20 @@ int ft_unset(t_lexer *lexer, t_env *env_list)
     return(1);
 }
 
-int execute_builtin(t_token *token, t_lexer *lexer, t_env *envlist)
+int execute_builtin(t_token *token, t_lexer *lexer, t_env **envlist)
 {
     if (strcmp(token->value, "echo") == 0)
-        ft_echo(lexer, envlist);
+        ft_echo(lexer, *envlist);
     if (strcmp(token->value, "cd") == 0)
         return(ft_cd(token, lexer));
     if (strcmp(token->value, "pwd") == 0)
-        return (ft_pwd());
+        return(ft_pwd());
     if (strcmp(token->value, "export") == 0)
         return(ft_export(token, lexer, envlist));
     if (strcmp(token->value, "unset") == 0)
         return(ft_unset(lexer, envlist));
     if (strcmp(token->value, "env") == 0)
-        return(ft_env(envlist));
+        return(ft_env(*envlist));
     if (strcmp(token->value, "exit") == 0)
         return(ft_exit(lexer));
     return (0);
@@ -273,7 +274,7 @@ int	main(int argc, char **argv, char **env)
 			token->type = token_type(token);
 			token->prece = precedence_type(token);
             // printf("%s\n", token->value);
-			execute_builtin(token, lexer, envlist);
+			execute_builtin(token, lexer, &envlist);
 		}
 	}
 	return (0);
